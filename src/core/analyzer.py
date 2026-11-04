@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
@@ -9,11 +10,13 @@ from utils.tools import save_technical_note, run_python_code
 load_dotenv()
 
 MAX_TOOL_ROUNDS = 3
+MAX_ATTEMPTS = 3
+RETRY_WAIT_SECONDS = 60
 
 class CodeAnalyzer:
     def __init__(self):
         # Create the model
-        base_model = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite",
+        self.base_model = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite",
                                             temperature=0,
                                             google_api_key=os.getenv("GOOGLE_API_KEY")
                                             )
@@ -22,11 +25,7 @@ class CodeAnalyzer:
         self.chat_history = []
 
         # Connect the tools to the model
-        tools = [save_technical_note, run_python_code]
-        self.llm = base_model.bind_tools(tools)
-
-        # Same model, but it has to answer without calling more tools
-        self.final_llm = base_model.bind_tools(tools, tool_choice="none")
+        self.llm = self.base_model.bind_tools([save_technical_note, run_python_code])
 
     def start_session(self, repo_data, max_characters=10000):
         """
@@ -56,6 +55,7 @@ class CodeAnalyzer:
                 "Python code runs from the project root and every repository file is inside data/raw/ "
                 "(e.g. data/raw/src/main.py or data/raw/sales.csv). Ignore paths mentioned in the repository's documentation. "
                 "Open text files with encoding='utf-8'. "
+                "Answer directly and concisely. "
                 f"\n\nCURRENT FILES READ AS TEXT:\n{context}"
             )
 
@@ -66,6 +66,19 @@ class CodeAnalyzer:
             logger.error(f"Error starting session: {e}")
             raise
 
+    def call_model(self, model):
+        """
+        Calls the model and waits before trying again if the API rate limit is reached.
+        """
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            try:
+                return model.invoke(self.chat_history)
+            except Exception as e:
+                if "RESOURCE_EXHAUSTED" not in str(e) or attempt == MAX_ATTEMPTS:
+                    raise
+                logger.warning(f"Rate limit reached. Waiting {RETRY_WAIT_SECONDS}s (attempt {attempt}/{MAX_ATTEMPTS})...")
+                time.sleep(RETRY_WAIT_SECONDS)
+
     def ask(self, question):
         """
         Receives the user's question, adds it to memory and generates the answer with the model.
@@ -75,7 +88,7 @@ class CodeAnalyzer:
             self.chat_history.append(HumanMessage(content=question))
 
             # Send the full history to the model (repository + previous questions + new question)
-            response = self.llm.invoke(self.chat_history)
+            response = self.call_model(self.llm)
 
             # Store the model's response in memory
             self.chat_history.append(response)
@@ -103,13 +116,17 @@ class CodeAnalyzer:
                         tool_call_id=tool_call["id"]
                     ))
 
-                # In the last round, the model has to answer with what it already has
-                model = self.final_llm if rounds == MAX_TOOL_ROUNDS else self.llm
-                response = model.invoke(self.chat_history)
+                # In the last round, use the model without tools so it has to answer
+                model = self.llm
+                if rounds == MAX_TOOL_ROUNDS:
+                    self.chat_history.append(HumanMessage(content="You have no tool calls left. Answer now with what you already know."))
+                    model = self.base_model
+
+                response = self.call_model(model)
                 self.chat_history.append(response)
 
             logger.info(f"rounds={rounds} pending_tools={len(response.tool_calls)} finish={response.response_metadata.get('finish_reason')} content={response.content!r}")
-            return response.content
+            return response.text or "I could not find an answer."
         except Exception as e:
             logger.error(f"Failed to communicate with the model: {e}")
             return "Sorry, an error occurred while getting the model's answer. Please try again later."

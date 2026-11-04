@@ -4,45 +4,45 @@ from utils.logger import logger
 
 def main():
     path_to_analyze = "data/raw"
-    logger.info(f"Lendo os arquivos do repositório: {path_to_analyze}")
+    logger.info(f"Reading repository files: {path_to_analyze}")
 
-    arquivos = read_repository_file(path_to_analyze)
+    files = read_repository_file(path_to_analyze)
 
-    if not arquivos:
-        # Usa warning (aviso) para situações que não quebram o app, mas exigem atenção
-        logger.warning(f"Nenhum arquivo encontrado para análise em {path_to_analyze}. Verifique o caminho e tente novamente.")
+    if not files:
+        # Warning: doesn't break the app, but needs attention
+        logger.warning(f"No files found to analyze in {path_to_analyze}. Check the path and try again.")
         return
 
-    logger.info(f"Analisando {len(arquivos)} arquivos com LLM...")
+    logger.info(f"Analyzing {len(files)} files with the LLM...")
 
-    # Inicializa o analisador e carrega a memória inicial
+    # Create the analyzer and load the initial memory
     analyzer = CodeAnalyzer()
-    analyzer.iniciar_sessao(arquivos)
+    analyzer.start_session(files)
 
-    # Interface do terminal
+    # Terminal interface
     print("\n" + "="*55)
-    print("🤖 ASSISTENTE DE ANÁLISE DE CÓDIGOS INICIADO")
-    print("Faça perguntas sobre os arquivos ou digite 'sair' para encerrar.")
+    print("🤖 CODE ANALYSIS ASSISTANT STARTED")
+    print("Ask about the files or type 'exit' to quit.")
     print("="*55)
 
     while True:
-        pergunta = input("\n 👤 Você: ")
+        question = input("\n 👤 You: ")
 
-        # Condição de saída
-        if pergunta.strip().lower() in ['sair', 'exit', 'quit', 'fechar']:
-            print("🤖 Encerrando o assistente. Até a próxima!")
-            logger.info("Sessão encerrada pelo usuário.")
+        # Exit condition
+        if question.strip().lower() in ['exit', 'quit', 'sair']:
+            print("🤖 Closing the assistant. See you next time!")
+            logger.info("Session closed by the user.")
             break
 
-        # Evita mandar mensagem vazia para a API
-        if not pergunta.strip():
+        # Avoid sending an empty message to the API
+        if not question.strip():
             continue
 
-        # Chama o modelo
-        logger.info("Enviando pergunta para o modelo...")
-        resposta = analyzer.fazer_pergunta(pergunta)
+        # Call the model
+        logger.info("Sending question to the model...")
+        answer = analyzer.ask(question)
 
-        print(f"🤖 Assistente: {resposta}")
+        print(f"🤖 Assistant: {answer}")
 
 if __name__ == "__main__":
     main()

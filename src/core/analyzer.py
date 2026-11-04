@@ -1,105 +1,99 @@
 import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
+from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from utils.logger import logger
-from utils.tools import salvar_nota_tecnica, executar_codigo_python
+from utils.tools import save_technical_note, run_python_code
 
-# Carrega as variáveis do arquivo .env
+# Load the variables from the .env file
 load_dotenv()
 
 class CodeAnalyzer:
     def __init__(self):
-        # Incializa o modelo (gemini-1.0-pro)
-        modelo_base = ChatGoogleGenerativeAI(model="gemini-2.5-flash",
-                                          temperature=0,
-                                          google_api_key=os.getenv("GOOGLE_API_KEY")
-                                          )
-        
-        # Inicializa a memória de mensagens
+        # Create the model
+        base_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash",
+                                            temperature=0,
+                                            google_api_key=os.getenv("GOOGLE_API_KEY")
+                                            )
+
+        # Create the message memory
         self.chat_history = []
 
-        # Conecta as ferramentas ao modelo
-        self.llm = modelo_base.bind_tools([salvar_nota_tecnica, executar_codigo_python])
+        # Connect the tools to the model
+        self.llm = base_model.bind_tools([save_technical_note, run_python_code])
 
-    def iniciar_sessao(self, repo_data):
+    def start_session(self, repo_data, max_characters=10000):
         """
-        Pega todos os arquivos e injeta como uma instrução de sistema oculta.
+        Takes all the files and injects them as a hidden system instruction.
         """
         try:
-            # Prepara o contexto: transformammos o dicionário em uma string formatada
+            # Build the context: turn the dictionary into a formatted string
             context = ""
             for path, content in repo_data.items():
-                context += f"\n--- ARQUIVO: {path} ---\n {content}\n"
+                context += f"\n--- FILE: {path} ---\n {content}\n"
 
-            # Limita a quantidade de caracteres
-            LIMITE_CARACTERES = 10000
+            # Limit the number of characters
+            if len(context) > max_characters:
+                logger.warning(f"Large context detected: {len(context)} characters. Truncating to avoid API errors...")
+                context = context[:max_characters] + "\n\n... [CODE TRUNCATED FOR SAFETY] ..."
 
-            if len(context) > LIMITE_CARACTERES:
-                logger.warning(f"Contexto gigante detectado: {len(context)} caracteres. Truncando para evitar error na API...")
-                context = context[:LIMITE_CARACTERES] + "\n\n... [CÓDIGO TRUNCADO POR SEGURANÇA] ..."
-
-            # SystemMessage é a mensagem de configuração do modelo
-            instrucao_sistema = (
-                "Você é um Agente Autônomo de Análise de Código, Dados e Engenharia de Software. "
-                "Use estritamente o código fornecido abaixo como sua base de conhecimento para responder às perguntas do usuário. "
-                "Se a resposta não estiver no código, diga que não encontrou nos arquivos fornecidos.\n\n"
-                "Você possui ferramentas para salvar relatórios e para executar código Python localmente. "
-                "Se o usuário pedir para analisar planilhas (CSVs) ou fazer cálculos complexos, ESCREVA E EXECUTE um código Python usando a ferramenta 'executar_codigo_python'. "
-                "Sempre importe as bibliotecas necessárias no seu código (ex: import pandas as pd). "
-                f"\n\nARQUIVOS ATUAIS LIDOS COMO TEXTO:\n{context}"
-                f"\n\nREPOSITÓRIO:\n{context}"    
+            # SystemMessage configures the model
+            system_prompt = (
+                "You are an Autonomous Agent for Code Analysis, Data and Software Engineering. "
+                "Use strictly the code provided below as your knowledge base to answer the user's questions. "
+                "If the answer is not in the code, say that you did not find it in the provided files. "
+                "Always answer in the same language as the user's question.\n\n"
+                "You have tools to save reports and to run Python code locally. "
+                "If the user asks you to analyze spreadsheets (CSVs) or do complex calculations, WRITE AND RUN Python code using the 'run_python_code' tool. "
+                "Always import the libraries you need in your code (e.g. import pandas as pd). "
+                f"\n\nCURRENT FILES READ AS TEXT:\n{context}"
             )
 
-            # A primeira coisa da memória é o contexto do repositório
-            self.chat_history = [SystemMessage(content=instrucao_sistema)]
-            logger.info("Sessão iniciada com o contexto do repositório injetado na memória.")
+            # The first item in memory is the repository context
+            self.chat_history = [SystemMessage(content=system_prompt)]
+            logger.info("Session started with the repository context in memory.")
         except Exception as e:
-            logger.error(f"Erro ao iniciar sessão: {e}")
+            logger.error(f"Error starting session: {e}")
             raise
 
-    def fazer_pergunta(self, pergunta_usuario):
+    def ask(self, question):
         """
-        Recebe a pergunta do usuário, adiciona à memória e gera a resposta usando o modelo.
+        Receives the user's question, adds it to memory and generates the answer with the model.
         """
-
         try:
-            # Adiciona a pergunta do usuário na memória
-            self.chat_history.append(HumanMessage(content=pergunta_usuario))
+            # Add the user's question to memory
+            self.chat_history.append(HumanMessage(content=question))
 
-            # Passa o histórico completo para o modelo gerar a resposta (repositório + perguntas anteriores + nova pergunta)
-            resposta = self.llm.invoke(self.chat_history)
+            # Send the full history to the model (repository + previous questions + new question)
+            response = self.llm.invoke(self.chat_history)
 
-            # Guarda a resposta do modelo na memória
-            self.chat_history.append(resposta)
+            # Store the model's response in memory
+            self.chat_history.append(response)
 
-            # Caso o modelo decida usar a ferramenta
-            if resposta.tool_calls:
-                for tool_call in resposta.tool_calls:
-                    logger.info(f"Modelo decidiu usar a ferramenta {tool_call['name']}")
+            # Let the model use tools for up to 3 rounds (e.g. read an error and try again)
+            rounds = 0
+            while response.tool_calls and rounds < 3:
+                rounds += 1
+                for tool_call in response.tool_calls:
+                    logger.info(f"Model decided to use the tool {tool_call['name']}")
 
-                    if tool_call["name"] == "salvar_nota_tecnica":
-                        # Executa o código da ferramenta
-                        resultado = salvar_nota_tecnica.invoke(tool_call["args"])
-                    elif tool_call["name"] == "executar_codigo_python":
-                        resultado = executar_codigo_python.invoke(tool_call["args"])
+                    if tool_call["name"] == "save_technical_note":
+                        result = save_technical_note.invoke(tool_call["args"])
+                    elif tool_call["name"] == "run_python_code":
+                        result = run_python_code.invoke(tool_call["args"])
+                    else:
+                        result = f"Unknown tool: {tool_call['name']}"
 
-                        # Devolve o resultado da execução para o modelo ler
-                        mensagem_resultado = ToolMessage(
-                            content=resultado,
-                            tool_call_id=tool_call["id"]
-                        )
-                        self.chat_history.append(mensagem_resultado)
+                    # Every tool sends its result back for the model to read
+                    self.chat_history.append(ToolMessage(
+                        content=result,
+                        tool_call_id=tool_call["id"]
+                    ))
 
-                # O modelo formula a resposta final após usar a ferramenta
-                resposta_final = self.llm.invoke(self.chat_history)
-                self.chat_history.append(resposta_final)
-                return resposta_final.content
-            
-            # Se o modelo não usou nenhuma ferramenta, retorna a resposta normalmente
-            return resposta.content
-                
-            return resposta.content
+                response = self.llm.invoke(self.chat_history)
+                self.chat_history.append(response)
+
+            return response.content
         except Exception as e:
-            logger.error(f"Falha de comunicação com o modelo: {e}")
-            return "Desculpe, ocorreu um erro ao tentar obter a resposta do modelo. Por favor, tente novamente mais tarde."
+            logger.error(f"Failed to communicate with the model: {e}")
+            return "Sorry, an error occurred while getting the model's answer. Please try again later."

@@ -11,7 +11,7 @@ load_dotenv()
 class CodeAnalyzer:
     def __init__(self):
         # Create the model
-        base_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash",
+        base_model = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite",
                                             temperature=0,
                                             google_api_key=os.getenv("GOOGLE_API_KEY")
                                             )
@@ -93,7 +93,7 @@ class CodeAnalyzer:
                 response = self.llm.invoke(self.chat_history)
                 self.chat_history.append(response)
 
-            return response.content
+            return response.text
         except Exception as e:
             logger.error(f"Failed to communicate with the model: {e}")
             return "Sorry, an error occurred while getting the model's answer. Please try again later."

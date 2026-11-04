@@ -12,7 +12,7 @@ from core.analyzer import CodeAnalyzer
 from utils.reader import read_repository_file
 
 LIMITS = [10000, 100000]
-PAUSE_SECONDS = 5  # Increase this if the API complains about rate limits
+PAUSE_SECONDS = 10  # Increase this if the API complains about rate limits
 
 QUESTIONS = [
     # A: content that fits in the 10,000-character limit

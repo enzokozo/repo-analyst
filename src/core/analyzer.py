@@ -8,6 +8,8 @@ from utils.tools import save_technical_note, run_python_code
 # Load the variables from the .env file
 load_dotenv()
 
+MAX_TOOL_ROUNDS = 3
+
 class CodeAnalyzer:
     def __init__(self):
         # Create the model
@@ -20,7 +22,11 @@ class CodeAnalyzer:
         self.chat_history = []
 
         # Connect the tools to the model
-        self.llm = base_model.bind_tools([save_technical_note, run_python_code])
+        tools = [save_technical_note, run_python_code]
+        self.llm = base_model.bind_tools(tools)
+
+        # Same model, but it has to answer without calling more tools
+        self.final_llm = base_model.bind_tools(tools, tool_choice="none")
 
     def start_session(self, repo_data, max_characters=10000):
         """
@@ -46,6 +52,10 @@ class CodeAnalyzer:
                 "You have tools to save reports and to run Python code locally. "
                 "If the user asks you to analyze spreadsheets (CSVs) or do complex calculations, WRITE AND RUN Python code using the 'run_python_code' tool. "
                 "Always import the libraries you need in your code (e.g. import pandas as pd). "
+                "Use a tool only when the answer is not in the files below. "
+                "Python code runs from the project root and every repository file is inside data/raw/ "
+                "(e.g. data/raw/src/main.py or data/raw/sales.csv). Ignore paths mentioned in the repository's documentation. "
+                "Open text files with encoding='utf-8'. "
                 f"\n\nCURRENT FILES READ AS TEXT:\n{context}"
             )
 
@@ -72,7 +82,7 @@ class CodeAnalyzer:
 
             # Let the model use tools for up to 3 rounds (e.g. read an error and try again)
             rounds = 0
-            while response.tool_calls and rounds < 3:
+            while response.tool_calls and rounds < MAX_TOOL_ROUNDS:
                 rounds += 1
                 for tool_call in response.tool_calls:
                     logger.info(f"Model decided to use the tool {tool_call['name']}")
@@ -84,16 +94,22 @@ class CodeAnalyzer:
                     else:
                         result = f"Unknown tool: {tool_call['name']}"
 
+                    logger.info(f"Tool args: {tool_call['args']}")
+                    logger.info(f"Tool result: {str(result)[:300]}")
+
                     # Every tool sends its result back for the model to read
                     self.chat_history.append(ToolMessage(
                         content=result,
                         tool_call_id=tool_call["id"]
                     ))
 
-                response = self.llm.invoke(self.chat_history)
+                # In the last round, the model has to answer with what it already has
+                model = self.final_llm if rounds == MAX_TOOL_ROUNDS else self.llm
+                response = model.invoke(self.chat_history)
                 self.chat_history.append(response)
 
-            return response.text
+            logger.info(f"rounds={rounds} pending_tools={len(response.tool_calls)} finish={response.response_metadata.get('finish_reason')} content={response.content!r}")
+            return response.content
         except Exception as e:
             logger.error(f"Failed to communicate with the model: {e}")
             return "Sorry, an error occurred while getting the model's answer. Please try again later."

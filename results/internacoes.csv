@@ -1,0 +1,100 @@
+﻿limit;group;question;expected;answer;correct
+10000;A;Qual é a pergunta norteadora do projeto?;Se a amplitude térmica extrema impacta mais as internações do que a queda da temperatura média;"A pergunta norteadora do projeto é:
+
+> **A amplitude térmica extrema (a diferença acentuada entre os dias mais quentes e as noites mais frias de um mesmo mês) tem um impacto mais forte no aumento das internações do que a queda na temperatura média isolada?**";1
+10000;A;Qual é o total de internações validado no projeto?;13.644;De acordo com o arquivo `README.md`, o total geral validado no TabNet para as internações é de **13.644 internações**.;1
+10000;A;O que o caractere '-' significa nos dados do SIH/SUS?;Zero ocorrências, não é dado faltante;Nos dados do SIH/SUS, o caractere `-` (obtido do TabNet) representa **zero ocorrências** (não é dado faltante). Conforme descrito na documentação (`README.md`), ele foi convertido para `0` durante o tratamento para a camada Prata.;1
+10000;A;Qual código o NASA POWER usa para valores ausentes?;-999;O código que a NASA POWER usa originalmente para valores ausentes é **`-999`**. (Conforme mencionado no README.md do projeto).;1
+10000;A;Qual classe gera o relatório de qualidade em explorar.py?;ProfileReport;No script `src/explorar.py`, a classe que gera o relatório de qualidade é a **`ProfileReport`** (importada da biblioteca `data_profiling`).;1
+10000;B;O que a função chave_texto faz em limpeza.py?;Minúsculas, remove espaços das extremidades e elimina acentos;A função `chave_texto` (presente em `limpeza.py`) converte o texto para letras minúsculas, remove os espaços em branco das extremidades e elimina os acentos.;1
+10000;B;Quais codificações transformar_sih.py tenta ao ler o CSV, e em que ordem?;utf-8 e depois latin1;Sorry, an error occurred while getting the model's answer. Please try again later.;0
+10000;B;Qual função de transformar_sih.py converte '..Janeiro/2010' em data?;converter_periodo;"Com base nos arquivos fornecidos, não há nenhum arquivo chamado `transformar_sih.py` na estrutura de código disponível (a listagem mostra apenas `src\explorar.py`, `src\ingerir_nasa.py`, `src\ingerir_sih.py`, `src\limpeza.py`, `src\transformar_nasa.py` e `src\transformar_sih.py` não está presente na listagem de arquivos da pasta `src/` dos arquivos lidos). 
+
+Portanto, não foi possível encontrar essa informação exata nos arquivos fornecidos.";0
+10000;B;Qual exceção transformar_nasa.py lança se a amplitude térmica for negativa?;ValueError;"Com base na documentação fornecida (especificamente no README.md, na seção sobre o atributo derivado `AMPLITUDE_TERMICA`), o script `transformar_nasa.py` **não lança uma exceção específica**, mas realiza uma conferência/validação informando que a amplitude térmica nunca é negativa. 
+
+Caso ocorra algum comportamento inesperado no script de transformação do SIH/SUS, é mencionado que ""valores inesperados interrompem o script"" (gerando um erro padrão de interrupção), mas para o NASA POWER o texto destaca apenas que ""o script confere que ela nunca é negativa"", sem definir o lançamento de uma exceção customizada nos arquivos fornecidos.";1
+10000;B;Como obter_arquivo_mais_recente em limpeza.py escolhe o arquivo?;Ordena pelo nome e pega o último;"Com base nos arquivos fornecidos no repositório, a função `obter_arquivo_mais_recente` não está presente no arquivo `limpeza.py` (este arquivo nem sequer aparece listado no conteúdo dos arquivos do projeto, embora seja citado na estrutura do repositório no `README.md`). 
+
+No entanto, uma função com o mesmo nome e comportamento idêntico está definida no arquivo `src/explorar.py`. Nele, a função escolhe o arquivo da seguinte forma:
+
+```python
+def obter_arquivo_mais_recente(pasta: Path, padrao: str) -> Path:
+    """"""Retorna o caminho do arquivo mais recente dentro da pasta informada.""""""
+    arquivos = sorted(pasta.glob(padrao))
+    if not arquivos:
+        raise FileNotFoundError(f""Nenhum arquivo encontrado em {pasta} com padrao {padrao}"")
+    return arquivos[-1]
+```
+
+Ou seja, ela busca todos os arquivos dentro da pasta informada que correspondem ao padrão (`padrao`) usando `pasta.glob(padrao)`, ordena-os em ordem alfabética/crescente (`sorted()`) e retorna o **último** elemento da lista (`arquivos[-1]`), que por convenção de nomenclatura com datas (como `AAAA-MM-DD` ou `AAAAMMDD`) corresponde ao arquivo mais recente.";0
+10000;C;Usando data/raw/sih_sus_raw.csv, qual foi o total de internações em 2013?;1918;Com base no arquivo `data/raw/sih_sus_raw.csv`, o total de internações no ano de 2013 foi **1.918**.;1
+10000;C;Usando data/raw/sih_sus_raw.csv, qual mês teve mais internações e quantas foram?;Maio de 2014, 232;Com base no arquivo `data/raw/sih_sus_raw.csv`, o mês que registrou mais internações foi **..Maio/2014**, com um total de **232** internações.;1
+10000;C;Usando data/raw/sih_sus_raw.csv, qual faixa etária teve mais internações no total e quantas foram?;80 anos e mais, 2782;Considerando os dados mensais filtrados (linhas iniciadas com `..`, de novembro/2009 a dezembro/2019), a faixa etária que teve mais internações no total foi **80 anos e mais**, com um total de **2.782** internações.;1
+10000;C;Usando data/raw/nasa_raw.csv, qual foi a amplitude térmica média diária (T2M_MAX - T2M_MIN) em 2015?;12,69 °C;A amplitude térmica média diária ($T2M\_MAX - T2M\_MIN$) em 2015 foi de aproximadamente **12,69 °C** (12,6902 °C).;1
+10000;C;Usando data/raw/nasa_raw.csv, em que dia a amplitude térmica (T2M_MAX - T2M_MIN) foi maior e qual foi o valor?;23/09/2014 (ano 2014, DOY 266), 22,89 °C;Com base no arquivo `data/raw/nasa_raw.csv`, a maior amplitude térmica (`T2M_MAX - T2M_MIN`) ocorreu no dia **23 de setembro de 2014** (Ano 2014, Dia do Ano 266), com o valor de **22,89 °C** (temperatura máxima de 29,64 °C e temperatura mínima de 6,75 °C).;1
+10000;D;Qual modelo de machine learning foi treinado neste projeto?;Nenhum / não encontrou;Nenhum modelo de machine learning foi treinado neste projeto. Conforme indicado na documentação (README.md), a camada Ouro ainda não foi implementada e o projeto encontra-se nas etapas de ingestão e tratamento de dados (camadas Bronze e Prata).;1
+10000;D;Em qual banco de dados relacional os dados são salvos?;Nenhum, usa arquivos / não encontrou;Com base nos arquivos fornecidos, os dados não são salvos em um banco de dados relacional. O projeto utiliza arquivos em formato CSV (na origem e camada Bronze) e arquivos no formato **Parquet** (na camada Prata, salvos em diretórios como `dados/prata/sih_sus.parquet` e `dados/prata/nasa_power.parquet`), além de registros de proveniência em arquivos `.jsonl`.;1
+10000;D;Em qual serviço de nuvem o projeto foi implantado?;Não encontrou;Sorry, an error occurred while getting the model's answer. Please try again later.;0
+10000;D;Quem é o orientador deste projeto?;Não encontrou;Não encontrei essa informação nos arquivos fornecidos. O projeto apenas identifica o aluno (Enzo Kozonoe, matrícula 2022010384), mas não menciona o nome do orientador.;1
+10000;D;Qual foi a conclusão final do projeto sobre a amplitude térmica?;"Ainda não há conclusão; a camada Ouro não foi implementada";"Com base nos arquivos fornecidos, a camada Ouro e as análises finais do projeto **ainda não foram implementadas**. 
+
+O `README.md` indica explicitamente na seção de ""Próximos Passos (Camada Ouro)"" que ela ainda não foi realizada, constando apenas a intenção de:
+- Agregar o clima diário por mês.
+- Cruzar com as internações por Mês/Ano.
+- Comparar o efeito da amplitude térmica com o da temperatura média sobre as internações para responder à pergunta norteadora.
+
+Portanto, a conclusão final específica sobre o impacto da amplitude térmica versus a temperatura média nas internações ainda não está disponível nos arquivos do repositório.";1
+100000;A;Qual é a pergunta norteadora do projeto?;Se a amplitude térmica extrema impacta mais as internações do que a queda da temperatura média;"A pergunta norteadora do projeto é:
+
+**""A amplitude térmica extrema (a diferença acentuada entre os dias mais quentes e as noites mais frias de um mesmo mês) tem um impacto mais forte no aumento das internações do que a queda na temperatura média isolada?""**";1
+100000;A;Qual é o total de internações validado no projeto?;13.644;Com base na documentação do projeto (arquivo `README.md`), o total geral validado do SIH/SUS é de **13.644 internações**.;1
+100000;A;O que o caractere '-' significa nos dados do SIH/SUS?;Zero ocorrências, não é dado faltante;Nos dados do SIH/SUS (TabNet), o caractere `-` significa **zero ocorrências** (ou seja, nenhuma internação registrada naquele mês/faixa etária), não sendo considerado um dado faltante. Durante o processamento para a camada Prata, esses hífens são convertidos para `0`.;1
+100000;A;Qual código o NASA POWER usa para valores ausentes?;-999;O NASA POWER usa o código `-999` (ou `-999` em formato de texto) para valores ausentes.;1
+100000;A;Qual classe gera o relatório de qualidade em explorar.py?;ProfileReport;Com base no código do arquivo `src/explorar.py`, a classe que gera o relatório de qualidade é a **`ProfileReport`** (importada do pacote `data_profiling`).;1
+100000;B;O que a função chave_texto faz em limpeza.py?;Minúsculas, remove espaços das extremidades e elimina acentos;"A função `chave_texto` no módulo `limpeza.py` padroniza uma série de texto para comparação e junção. Ela realiza os seguintes passos:
+
+1. Converte o texto para minúsculas.
+2. Remove os espaços nas extremidades.
+3. Elimina os acentos (normalizando com `NFKD` e codificando em `ascii` com `errors=""ignore""`).
+4. Retorna a série decodificada para `utf-8`.";1
+100000;B;Quais codificações transformar_sih.py tenta ao ler o CSV, e em que ordem?;utf-8 e depois latin1;"De acordo com o código fornecido em `src/transformar_sih.py`, o script tenta as seguintes codificações (encodings) ao ler o arquivo CSV, na seguinte ordem:
+
+1. **`utf-8`** (tentado primeiro dentro de um bloco `try`)
+2. **`latin1`** (tentado em caso de exceção `UnicodeDecodeError` no bloco `except`)";1
+100000;B;Qual função de transformar_sih.py converte '..Janeiro/2010' em data?;converter_periodo;A função em `transformar_sih.py` que converte textos como `'..Janeiro/2010'` em data é a `converter_periodo`.;1
+100000;B;Qual exceção transformar_nasa.py lança se a amplitude térmica for negativa?;ValueError;"O script `transformar_nasa.py` lança uma exceção do tipo `ValueError` com a mensagem `""Amplitude termica negativa encontrada (T2M_MAX < T2M_MIN).""` se a amplitude térmica for negativa.";1
+100000;B;Como obter_arquivo_mais_recente em limpeza.py escolhe o arquivo?;Ordena pelo nome e pega o último;"Oclusão no código de `src/limpeza.py`: a função `obter_arquivo_mais_recente(pasta: Path, padrao: str)` escolhe o arquivo **ordenando alfabeticamente** os arquivos encontrados que correspondem ao padrão na pasta informada e retornando o **último** da lista ordenada (`arquivos[-1]`). 
+
+Trecho correspondente em `src/limpeza.py`:
+```python
+def obter_arquivo_mais_recente(pasta: Path, padrao: str) -> Path:
+    """"""Localiza o arquivo mais recente em uma pasta ordenando pelo nome.""""""
+    arquivos = sorted(pasta.glob(padrao))
+    if not arquivos:
+        raise FileNotFoundError(f""Nenhum arquivo encontrado em {pasta} com o padrao '{padrao}'."")
+    return arquivos[-1]
+```
+
+Como os arquivos nas pastas Bronze incluem datas no nome no formato padrão (ex: `internacoes_20231025.csv`), a ordenação alfabética coincide com a ordem cronológica, fazendo com que o ""último"" seja o arquivo mais recente.";1
+100000;C;Usando data/raw/sih_sus_raw.csv, qual foi o total de internações em 2013?;1918;Com base no arquivo `data/raw/sih_sus_raw.csv`, o total de internações no ano de 2013 foi de **1.918** (conforme a linha de resumo anual correspondente a 2013 na tabela do TabNet/DataSUS).;1
+100000;C;Usando data/raw/sih_sus_raw.csv, qual mês teve mais internações e quantas foram?;Maio de 2014, 232;O mês com mais internações foi **Maio de 2014** (`..Maio/2014`), com um total de **232** internações.;1
+100000;C;Usando data/raw/sih_sus_raw.csv, qual faixa etária teve mais internações no total e quantas foram?;80 anos e mais, 2782;"A faixa etária que teve mais internações no total foi **""80 anos e mais""**, com um total de **2.782** internações.";1
+100000;C;Usando data/raw/nasa_raw.csv, qual foi a amplitude térmica média diária (T2M_MAX - T2M_MIN) em 2015?;12,69 °C;Usando o arquivo `data/raw/nasa_raw.csv`, a amplitude térmica média diária ($T2M\_MAX - T2M\_MIN$) no ano de **2015** foi de aproximadamente **12,69 °C** (12,6902 °C).;1
+100000;C;Usando data/raw/nasa_raw.csv, em que dia a amplitude térmica (T2M_MAX - T2M_MIN) foi maior e qual foi o valor?;23/09/2014 (ano 2014, DOY 266), 22,89 °C;A maior amplitude térmica ocorreu no dia **23/09/2014** (2014-09-23), com o valor de **22,89 °C** (T2M_MAX - T2M_MIN).;1
+100000;D;Qual modelo de machine learning foi treinado neste projeto?;Nenhum / não encontrou;"Com base nos arquivos fornecidos no repositório, **nenhum modelo de machine learning foi treinado neste projeto até o momento**. 
+
+O projeto encontra-se estruturado nas camadas Bronze e Prata (responsáveis pela ingestão, limpeza, tratamento e validação de dados das fontes SIH/SUS e NASA POWER). A camada Ouro (que realizaria a agregação mensal do clima, o cruzamento com as internações e análises estatísticas/preditivas para responder à pergunta norteadora) ainda não foi implementada, conforme indicado no arquivo `README.md`:
+
+> *“A camada Ouro ainda não foi implementada.”*";1
+100000;D;Em qual banco de dados relacional os dados são salvos?;Nenhum, usa arquivos / não encontrou;Com base nos arquivos fornecidos, os dados **não são salvos em um banco de dados relacional**. O projeto utiliza arquivos no formato **Parquet** (`.parquet`) salvos diretamente no sistema de arquivos na camada Prata (`dados/prata/sih_sus.parquet` e `dados/prata/nasa_power.parquet`), além de arquivos CSV e JSON na camada Bronze.;1
+100000;D;Em qual serviço de nuvem o projeto foi implantado?;Não encontrou;"Com base nos arquivos fornecidos do projeto, não há menção ou informação sobre a implantação em nenhum serviço de nuvem. Os dados e scripts são executados e armazenados localmente (camadas Bronze e Prata em pastas locais como `dados/bronze` e `dados/prata`). 
+
+Portanto, **não encontrei essa informação nos arquivos do repositório.**";1
+100000;D;Quem é o orientador deste projeto?;Não encontrou;Com base nos arquivos fornecidos, não há menção ao nome do orientador do projeto. O README.md identifica apenas o aluno (Enzo Kozonoe) e sua matrícula.;1
+100000;D;Qual foi a conclusão final do projeto sobre a amplitude térmica?;"Ainda não há conclusão; a camada Ouro não foi implementada";"Com base nos arquivos fornecidos, a camada Ouro (que realizaria o cruzamento final entre o clima e as internações para responder à pergunta norteadora) **ainda não foi implementada**. 
+
+Como descrito na seção de **Próximos Passos (Camada Ouro)** do `README.md`:
+> *""A camada Ouro ainda não foi implementada. Está prevista: Agregar o clima diário por mês [...]; Cruzar com as internações por Mês/Ano [...]; Comparar o efeito da amplitude térmica com o da temperatura média sobre as internações.""*
+
+Portanto, os códigos e documentos atuais preparam os dados nas camadas Bronze e Prata (criando o atributo derivado `AMPLITUDE_TERMICA`, por exemplo), mas a conclusão analítica final sobre a pergunta norteadora não consta nos arquivos fornecidos.";1

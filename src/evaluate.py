@@ -1,20 +1,24 @@
-"""Evaluates the agent: the same 20 questions with two context limits.
+"""Evaluates the agent with a fixed set of questions.
 
-Run from the project root: python src/evaluate.py
-Output: data/output/test_results.csv. Fill the "correct" column with 1 or 0.
+Put the test repository in data/raw and run from the project root:
+    python src/evaluate.py internacoes
+    python src/evaluate.py ito
+
+Output: results/<name>.csv. Fill the "correct" column with 1 or 0.
 Each question uses a new session, so one answer can't influence the next.
-The questions are in Portuguese because the test repository (data/raw) is too.
+The questions are in Portuguese because the test repositories are too.
 """
 import csv
+import os
+import sys
 import time
 
-from core.analyzer import CodeAnalyzer
-from utils.reader import read_repository_file
+from agent import RepoAgent
+from reader import read_text_files
 
-LIMITS = [10000, 100000]
-PAUSE_SECONDS = 10  # Increase this if the API complains about rate limits
+PAUSE_SECONDS = 15
 
-QUESTIONS = [
+INTERNACOES_QUESTIONS = [
     # A: content that fits in the 10,000-character limit
     ("A", "Qual é a pergunta norteadora do projeto?", "Se a amplitude térmica extrema impacta mais as internações do que a queda da temperatura média"),
     ("A", "Qual é o total de internações validado no projeto?", "13.644"),
@@ -41,27 +45,56 @@ QUESTIONS = [
     ("D", "Qual foi a conclusão final do projeto sobre a amplitude térmica?", "Ainda não há conclusão; a camada Ouro não foi implementada"),
 ]
 
+ITO_QUESTIONS = [
+    # Answer in the code
+    ("code", "Qual é o número mínimo de jogadores para iniciar uma rodada?", "2"),
+    ("code", "Quantas cartas tem o baralho e quais são os valores?", "100 cartas, de 1 a 100"),
+    ("code", "Quantas cores estão disponíveis para os jogadores?", "8"),
+    ("code", "O que acontece com a cor de um jogador quando ele sai do jogo?", "Volta para a lista de cores disponíveis"),
+    ("code", "Qual é a rota do WebSocket?", "/ws/{player_name}"),
+    ("code", "get_game_state revela as cartas dos jogadores?", "Não"),
+    # Files the reader does not load: .html and a UTF-16 requirements.txt
+    ("skipped", "Em qual endereço o frontend se conecta ao WebSocket?", "ws://127.0.0.1:8000/ws/{name}"),
+    ("skipped", "Qual versão do FastAPI o projeto usa?", "0.135.3"),
+    # No answer in the repository
+    ("none", "Em qual banco de dados o estado do jogo é salvo?", "Nenhum, fica em memória"),
+    ("none", "Qual provedor de login o projeto usa?", "Nenhum / não encontrou"),
+]
+
+# Each test: questions and the context limits to compare
+TESTS = {
+    "internacoes": (INTERNACOES_QUESTIONS, [10000, 100000]),
+    "ito": (ITO_QUESTIONS, [100000]),
+}
+
 
 def main():
-    files = read_repository_file("data/raw")
+    if len(sys.argv) != 2 or sys.argv[1] not in TESTS:
+        raise SystemExit(f"Usage: python src/evaluate.py [{' | '.join(TESTS)}]")
+
+    name = sys.argv[1]
+    questions, limits = TESTS[name]
+
+    files = read_text_files("data/raw")
     if not files:
         raise SystemExit("No files found in data/raw.")
 
-    with open("data/output/test_results.csv", "w", newline="", encoding="utf-8-sig") as output:
+    os.makedirs("results", exist_ok=True)
+    with open(f"results/{name}.csv", "w", newline="", encoding="utf-8-sig") as output:
         writer = csv.writer(output, delimiter=";")
         writer.writerow(["limit", "group", "question", "expected", "answer", "correct"])
 
-        for limit in LIMITS:
-            for group, question, expected in QUESTIONS:
+        for limit in limits:
+            for group, question, expected in questions:
                 print(f"[limit {limit}] group {group}: {question}")
-                agent = CodeAnalyzer()
+                agent = RepoAgent()
                 agent.start_session(files, max_characters=limit)
                 answer = agent.ask(question)
                 writer.writerow([limit, group, question, expected, answer, ""])
                 output.flush()
                 time.sleep(PAUSE_SECONDS)
 
-    print("Done: data/output/test_results.csv")
+    print(f"Done: results/{name}.csv")
 
 
 if __name__ == "__main__":

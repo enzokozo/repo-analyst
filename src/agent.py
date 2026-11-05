@@ -3,8 +3,8 @@ import time
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
-from utils.logger import logger
-from utils.tools import save_technical_note, run_python_code
+from logger import logger
+from tools import save_technical_note, run_python_code
 
 # Load the variables from the .env file
 load_dotenv()
@@ -13,7 +13,7 @@ MAX_TOOL_ROUNDS = 3
 MAX_ATTEMPTS = 3
 RETRY_WAIT_SECONDS = 60
 
-class CodeAnalyzer:
+class RepoAgent:
     def __init__(self):
         # Create the model
         self.base_model = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite",
@@ -25,16 +25,16 @@ class CodeAnalyzer:
         self.chat_history = []
 
         # Connect the tools to the model
-        self.llm = self.base_model.bind_tools([save_technical_note, run_python_code])
+        self.model_with_tools = self.base_model.bind_tools([save_technical_note, run_python_code])
 
-    def start_session(self, repo_data, max_characters=10000):
+    def start_session(self, files, max_characters=100000):
         """
         Takes all the files and injects them as a hidden system instruction.
         """
         try:
             # Build the context: turn the dictionary into a formatted string
             context = ""
-            for path, content in repo_data.items():
+            for path, content in files.items():
                 context += f"\n--- FILE: {path} ---\n {content}\n"
 
             # Limit the number of characters
@@ -88,7 +88,7 @@ class CodeAnalyzer:
             self.chat_history.append(HumanMessage(content=question))
 
             # Send the full history to the model (repository + previous questions + new question)
-            response = self.call_model(self.llm)
+            response = self.call_model(self.model_with_tools)
 
             # Store the model's response in memory
             self.chat_history.append(response)
@@ -117,7 +117,7 @@ class CodeAnalyzer:
                     ))
 
                 # In the last round, use the model without tools so it has to answer
-                model = self.llm
+                model = self.model_with_tools
                 if rounds == MAX_TOOL_ROUNDS:
                     self.chat_history.append(HumanMessage(content="You have no tool calls left. Answer now with what you already know."))
                     model = self.base_model

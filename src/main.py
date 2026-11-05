@@ -1,12 +1,12 @@
-from utils.reader import read_repository_file
-from core.analyzer import CodeAnalyzer
-from utils.logger import logger
+from agent import RepoAgent
+from logger import logger
+from reader import read_text_files
 
 def main():
     path_to_analyze = "data/raw"
     logger.info(f"Reading repository files: {path_to_analyze}")
 
-    files = read_repository_file(path_to_analyze)
+    files = read_text_files(path_to_analyze)
 
     if not files:
         # Warning: doesn't break the app, but needs attention
@@ -15,13 +15,13 @@ def main():
 
     logger.info(f"Analyzing {len(files)} files with the LLM...")
 
-    # Create the analyzer and load the initial memory
-    analyzer = CodeAnalyzer()
-    analyzer.start_session(files)
+    # Create the agent and load the initial memory
+    agent = RepoAgent()
+    agent.start_session(files)
 
     # Terminal interface
     print("\n" + "="*55)
-    print("🤖 CODE ANALYSIS ASSISTANT STARTED")
+    print("🤖 REPO ANALYST STARTED")
     print("Ask about the files or type 'exit' to quit.")
     print("="*55)
 
@@ -40,7 +40,7 @@ def main():
 
         # Call the model
         logger.info("Sending question to the model...")
-        answer = analyzer.ask(question)
+        answer = agent.ask(question)
 
         print(f"🤖 Assistant: {answer}")
 

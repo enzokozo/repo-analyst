@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Ito - Mesa</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        .grid { display: flex; gap: 20px; }
+        #chat { height: 200px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9; }
+        .panel { border: 1px solid #333; padding: 15px; border-radius: 8px; flex: 1; }
+        .secret-card { font-size: 48px; color: #d9534f; font-weight: bold; text-align: center; margin: 10px 0; }
+        
+        /* Novos estilos para a lista de jogadores e cores */
+        ul { list-style-type: none; padding: 0; }
+        .player-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 16px; font-weight: bold; }
+        .color-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #333; margin-right: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h2>Mesa do Ito</h2>
+    
+    <div id="setup">
+        <input type="text" id="playerName" placeholder="Seu Nome" autocomplete="off">
+        <button onclick="connect()">Entrar na Mesa</button>
+    </div>
+
+    <div id="gameArea" style="display: none;">
+        <div class="grid">
+            <div class="panel">
+                <h3>Controles da Mesa</h3>
+                <button onclick="startGame()" style="width: 100%; padding: 10px; background: #5cb85c; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px;">Sortear Tema e Iniciar!</button>
+                
+                <hr>
+                <h4>Jogadores na Mesa:</h4>
+                <ul id="playerList"></ul>
+                
+                <h4>Tema Atual: <br><span id="currentTheme" style="color: blue; font-size: 18px;">Nenhum</span></h4>
+            </div>
+
+            <div class="panel">
+                <div style="text-align: center; background: #eee; padding: 10px; border-radius: 8px;">
+                    <h3>Sua Carta Secreta</h3>
+                    <div id="myCard" class="secret-card">?</div>
+                </div>
+
+                <h3 style="margin-top: 20px;">Chat</h3>
+                <div id="chat"></div>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="messageInput" placeholder="Sua dica..." style="flex: 1;" autocomplete="off">
+                    <button onclick="sendChat()">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+
+        function connect() {
+            const name = document.getElementById("playerName").value;
+            if (!name) return alert("Digite um nome!");
+
+            ws = new WebSocket(`ws://127.0.0.1:8000/ws/${name}`);
+
+            ws.onopen = () => {
+                document.getElementById("setup").style.display = "none";
+                document.getElementById("gameArea").style.display = "block";
+            };
+
+            // O navegador escutando o servidor
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+
+                if (msg.type === "chat") {
+                    const chat = document.getElementById("chat");
+                    chat.innerHTML += `<p style="margin: 5px 0;">${msg.message}</p>`;
+                    chat.scrollTop = chat.scrollHeight;
+                } 
+                else if (msg.type === "game_state") {
+                    // Atualiza a lista de jogadores e desenha a bolinha colorida
+                    const list = document.getElementById("playerList");
+                    list.innerHTML = "";
+                    msg.data.players.forEach(playerName => {
+                        const playerColorData = msg.data.players_colors[playerName];
+                        const colorHex = playerColorData ? playerColorData.hex : "#ccc"; // Cinza se der erro
+                        
+                        list.innerHTML += `
+                            <li class="player-item">
+                                <span class="color-dot" style="background-color: ${colorHex};"></span>
+                                ${playerName}
+                            </li>`;
+                    });
+                    
+                    // Atualiza o tema
+                    document.getElementById("currentTheme").innerText = msg.data.theme || "Nenhum";
+                }
+                else if (msg.type === "secret_card") {
+                    document.getElementById("myCard").innerText = msg.card;
+                }
+            };
+        }
+
+        function sendChat() {
+            const input = document.getElementById("messageInput");
+            if (input.value && ws) {
+                const data = { action: "chat", message: input.value };
+                ws.send(JSON.stringify(data));
+                input.value = "";
+            }
+        }
+
+        function startGame() {
+            // Não enviamos mais o "theme", apenas a ação
+            const data = { action: "start_game" };
+            ws.send(JSON.stringify(data));
+        }
+    </script>
+</body>
+</html>

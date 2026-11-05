@@ -6,7 +6,7 @@ I built it as a personal project to learn about LLMs and agents. It has no real 
 
 ## How it works
 
-1. `src/reader.py` loads the `.py`, `.txt`, `.md` and `.js` files from `data/raw`.
+1. `src/reader.py` loads the `.py`, `.txt`, `.md` and `.js` files from the repository folder.
 2. `src/agent.py` puts those files in the system prompt and keeps the chat history.
 3. The model answers directly or calls a tool: `run_python_code` or `save_technical_note`.
 4. Tool results go back to the model for up to 3 rounds. In the last round, the model has to answer without tools.
@@ -25,11 +25,13 @@ Create a `.env` file in the project root:
 GOOGLE_API_KEY=your_key_here
 ```
 
-Put the repository you want to analyze in `data/raw`, then run:
+Pass the folder of the repository you want to analyze:
 
 ```bash
-python src/main.py
+python src/main.py path/to/repository
 ```
+
+Without a path, it uses the sample in `data/raw_internacoes`.
 
 ## Evaluation
 
@@ -43,7 +45,7 @@ I graded the answers by hand against expected answers. The model is `gemini-3.5-
 | After fixes | Same questions | 100,000 characters | 20/20 |
 | Final | 10 new questions on a repository the agent had not seen (`ito`) | 100,000 characters | 8/10 |
 
-Run them with `python src/evaluate.py internacoes` and `python src/evaluate.py ito`. Each one needs its test repository in `data/raw`. The graded answers are in `results/`.
+Run them with `python src/evaluate.py internacoes` and `python src/evaluate.py ito`. The test repositories are in `data/raw_internacoes` and `data/raw_ito`. The graded answers are in `results/`.
 
 These are small samples. I adjusted the agent while looking at the 20 questions, so the 8/10 is the fairer number.
 

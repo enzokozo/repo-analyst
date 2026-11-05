@@ -30,7 +30,7 @@ def run_python_code(code: str) -> str:
     """
     USEFUL FOR ANALYZING DATA (CSV, JSON, EXCEL) OR DOING MATH.
     Receives a string with pure Python code, runs it locally and returns the console output (stdout).
-    TIP FOR THE MODEL: to read files, remember that they are in the 'data/raw/' folder.
+    TIP FOR THE MODEL: the system prompt says which folder holds the repository files.
     Always use print() in your code to return results, because whatever is printed is captured and returned as the answer.
     """
     logger.info("The model called the Python interpreter. Running the generated code...")

@@ -27,7 +27,7 @@ class RepoAgent:
         # Connect the tools to the model
         self.model_with_tools = self.base_model.bind_tools([save_technical_note, run_python_code])
 
-    def start_session(self, files, max_characters=100000):
+    def start_session(self, files, repo_path, max_characters=100000):
         """
         Takes all the files and injects them as a hidden system instruction.
         """
@@ -52,8 +52,8 @@ class RepoAgent:
                 "If the user asks you to analyze spreadsheets (CSVs) or do complex calculations, WRITE AND RUN Python code using the 'run_python_code' tool. "
                 "Always import the libraries you need in your code (e.g. import pandas as pd). "
                 "Use a tool only when the answer is not in the files below. "
-                "Python code runs from the project root and every repository file is inside data/raw/ "
-                "(e.g. data/raw/src/main.py or data/raw/sales.csv). Ignore paths mentioned in the repository's documentation. "
+                f"Python code runs from the project root and every repository file is inside {repo_path}/ "
+                f"(e.g. {repo_path}/src/main.py or {repo_path}/sales.csv). Ignore paths mentioned in the repository's documentation. "
                 "Open text files with encoding='utf-8'. "
                 "Answer directly and concisely, in natural plain text. Do not use Markdown, such as bold, headings, lists or code blocks. "
                 f"\n\nCURRENT FILES READ AS TEXT:\n{context}"

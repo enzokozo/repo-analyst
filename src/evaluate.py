@@ -1,6 +1,6 @@
 """Evaluates the agent with a fixed set of questions.
 
-Put the test repository in data/raw and run from the project root:
+Run from the project root:
     python src/evaluate.py internacoes
     python src/evaluate.py ito
 
@@ -32,11 +32,11 @@ INTERNACOES_QUESTIONS = [
     ("B", "Qual exceção transformar_nasa.py lança se a amplitude térmica for negativa?", "ValueError"),
     ("B", "Como obter_arquivo_mais_recente em limpeza.py escolhe o arquivo?", "Ordena pelo nome e pega o último"),
     # C: calculations on the CSVs, using the Python tool
-    ("C", "Usando data/raw/sih_sus_raw.csv, qual foi o total de internações em 2013?", "1918"),
-    ("C", "Usando data/raw/sih_sus_raw.csv, qual mês teve mais internações e quantas foram?", "Maio de 2014, 232"),
-    ("C", "Usando data/raw/sih_sus_raw.csv, qual faixa etária teve mais internações no total e quantas foram?", "80 anos e mais, 2782"),
-    ("C", "Usando data/raw/nasa_raw.csv, qual foi a amplitude térmica média diária (T2M_MAX - T2M_MIN) em 2015?", "12,69 °C"),
-    ("C", "Usando data/raw/nasa_raw.csv, em que dia a amplitude térmica (T2M_MAX - T2M_MIN) foi maior e qual foi o valor?", "23/09/2014 (ano 2014, DOY 266), 22,89 °C"),
+    ("C", "Usando data/raw_internacoes/sih_sus_raw.csv, qual foi o total de internações em 2013?", "1918"),
+    ("C", "Usando data/raw_internacoes/sih_sus_raw.csv, qual mês teve mais internações e quantas foram?", "Maio de 2014, 232"),
+    ("C", "Usando data/raw_internacoes/sih_sus_raw.csv, qual faixa etária teve mais internações no total e quantas foram?", "80 anos e mais, 2782"),
+    ("C", "Usando data/raw_internacoes/nasa_raw.csv, qual foi a amplitude térmica média diária (T2M_MAX - T2M_MIN) em 2015?", "12,69 °C"),
+    ("C", "Usando data/raw_internacoes/nasa_raw.csv, em que dia a amplitude térmica (T2M_MAX - T2M_MIN) foi maior e qual foi o valor?", "23/09/2014 (ano 2014, DOY 266), 22,89 °C"),
     # D: no answer in the repository; the agent has to say so
     ("D", "Qual modelo de machine learning foi treinado neste projeto?", "Nenhum / não encontrou"),
     ("D", "Em qual banco de dados relacional os dados são salvos?", "Nenhum, usa arquivos / não encontrou"),
@@ -61,10 +61,10 @@ ITO_QUESTIONS = [
     ("none", "Qual provedor de login o projeto usa?", "Nenhum / não encontrou"),
 ]
 
-# Each test: questions and the context limits to compare
+# Each test: questions, the context limits to compare and the repository folder
 TESTS = {
-    "internacoes": (INTERNACOES_QUESTIONS, [10000, 100000]),
-    "ito": (ITO_QUESTIONS, [100000]),
+    "internacoes": (INTERNACOES_QUESTIONS, [10000, 100000], "data/raw_internacoes"),
+    "ito": (ITO_QUESTIONS, [100000], "data/raw_ito"),
 }
 
 
@@ -73,11 +73,11 @@ def main():
         raise SystemExit(f"Usage: python src/evaluate.py [{' | '.join(TESTS)}]")
 
     name = sys.argv[1]
-    questions, limits = TESTS[name]
+    questions, limits, repo_path = TESTS[name]
 
-    files = read_text_files("data/raw")
+    files = read_text_files(repo_path)
     if not files:
-        raise SystemExit("No files found in data/raw.")
+        raise SystemExit(f"No files found in {repo_path}.")
 
     os.makedirs("results", exist_ok=True)
     with open(f"results/{name}.csv", "w", newline="", encoding="utf-8-sig") as output:
@@ -88,7 +88,7 @@ def main():
             for group, question, expected in questions:
                 print(f"[limit {limit}] group {group}: {question}")
                 agent = RepoAgent()
-                agent.start_session(files, max_characters=limit)
+                agent.start_session(files, repo_path, max_characters=limit)
                 answer = agent.ask(question)
                 writer.writerow([limit, group, question, expected, answer, ""])
                 output.flush()

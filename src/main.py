@@ -1,9 +1,12 @@
+import sys
+
 from agent import RepoAgent
 from logger import logger
 from reader import read_text_files
 
 def main():
-    path_to_analyze = "data/raw"
+    # Default to the sample repository, or use the folder passed in the command
+    path_to_analyze = sys.argv[1] if len(sys.argv) > 1 else "data/raw_internacoes"
     logger.info(f"Reading repository files: {path_to_analyze}")
 
     files = read_text_files(path_to_analyze)
@@ -17,7 +20,7 @@ def main():
 
     # Create the agent and load the initial memory
     agent = RepoAgent()
-    agent.start_session(files)
+    agent.start_session(files, path_to_analyze)
 
     # Terminal interface
     print("\n" + "="*55)

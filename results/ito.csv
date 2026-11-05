@@ -1,11 +1,11 @@
 ﻿limit;group;question;expected;answer;correct
 100000;code;Qual é o número mínimo de jogadores para iniciar uma rodada?;2;O número mínimo de jogadores para iniciar uma rodada é 2.;1
-100000;code;Quantas cartas tem o baralho e quais são os valores?;100 cartas, de 1 a 100;O baralho do Ito tem cartas de 1 a 100, totalizando 100 cartas com valores que vão de 1 até 100.;1
-100000;code;Quantas cores estão disponíveis para os jogadores?;8;Estão disponíveis 8 cores para os jogadores.;1
-100000;code;O que acontece com a cor de um jogador quando ele sai do jogo?;Volta para a lista de cores disponíveis;Quando um jogador sai do jogo, a cor dele é removida do dicionário de cores dos jogadores e devolvida para a lista de cores disponíveis, podendo ser escolhida novamente por outro jogador.;1
+100000;code;Quantas cartas tem o baralho e quais são os valores?;100 cartas, de 1 a 100;O baralho do Ito tem 100 cartas e os valores vão de 1 a 100.;1
+100000;code;Quantas cores estão disponíveis para os jogadores?;8;O número de cores disponíveis para os jogadores no código fornecido é oito.;1
+100000;code;O que acontece com a cor de um jogador quando ele sai do jogo?;Volta para a lista de cores disponíveis;Quando um jogador sai do jogo, a cor dele é removida do dicionário de cores dos jogadores e devolvida para a lista de cores disponíveis.;1
 100000;code;Qual é a rota do WebSocket?;/ws/{player_name};A rota do WebSocket é /ws/{player_name}.;1
-100000;code;get_game_state revela as cartas dos jogadores?;Não;Não, a função get_game_state não revela as cartas dos jogadores. Ela retorna um dicionário contendo apenas a lista de jogadores, as cores dos jogadores, as cartas jogadas na rodada, o tema e o status indicando se o jogo começou.;1
+100000;code;get_game_state revela as cartas dos jogadores?;Não;O método get_game_state não revela as cartas dos jogadores, pois ele retorna apenas a lista de jogadores, as cores dos jogadores, as cartas jogadas, o tema e o estado de início do jogo.;1
 100000;skipped;Em qual endereço o frontend se conecta ao WebSocket?;ws://127.0.0.1:8000/ws/{name};O frontend se conecta ao WebSocket no endereço /ws/{player_name}, onde {player_name} representa o nome do jogador.;0
-100000;skipped;Qual versão do FastAPI o projeto usa?;0.135.3;Desculpe, mas não encontrei a versão específica do FastAPI nos arquivos fornecidos.;0
-100000;none;Em qual banco de dados o estado do jogo é salvo?;Nenhum, fica em memória;O estado do jogo não é salvo em nenhum banco de dados. Ele é mantido exclusivamente na memória RAM através da instância da classe ItoGame e do gerenciador de conexões no backend.;1
-100000;none;Qual provedor de login o projeto usa?;Nenhum / não encontrou;O projeto não utiliza nenhum provedor de login externo. A identificação dos jogadores é feita apenas informando o nome diretamente ao entrar no jogo através do WebSocket (parâmetro player_name na rota /ws/{player_name}), sem autenticação ou senhas.;1
+100000;skipped;Qual versão do FastAPI o projeto usa?;0.135.3;Não encontrei essa informação nos arquivos fornecidos.;0
+100000;none;Em qual banco de dados o estado do jogo é salvo?;Nenhum, fica em memória;O estado do jogo é mantido na memória em um dicionário e atributos da classe ItoGame, sem utilizar nenhum banco de dados persistente.;1
+100000;none;Qual provedor de login o projeto usa?;Nenhum / não encontrou;Eu não encontrei essa informação nos arquivos fornecidos.;1

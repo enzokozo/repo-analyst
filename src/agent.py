@@ -55,7 +55,7 @@ class RepoAgent:
                 "Python code runs from the project root and every repository file is inside data/raw/ "
                 "(e.g. data/raw/src/main.py or data/raw/sales.csv). Ignore paths mentioned in the repository's documentation. "
                 "Open text files with encoding='utf-8'. "
-                "Answer directly and concisely. "
+                "Answer directly and concisely, in natural plain text. Do not use Markdown, such as bold, headings, lists or code blocks. "
                 f"\n\nCURRENT FILES READ AS TEXT:\n{context}"
             )
 

@@ -13,7 +13,7 @@
 Portanto, não foi possível encontrar essa informação exata nos arquivos fornecidos.";0
 10000;B;Qual exceção transformar_nasa.py lança se a amplitude térmica for negativa?;ValueError;"Com base na documentação fornecida (especificamente no README.md, na seção sobre o atributo derivado `AMPLITUDE_TERMICA`), o script `transformar_nasa.py` **não lança uma exceção específica**, mas realiza uma conferência/validação informando que a amplitude térmica nunca é negativa. 
 
-Caso ocorra algum comportamento inesperado no script de transformação do SIH/SUS, é mencionado que ""valores inesperados interrompem o script"" (gerando um erro padrão de interrupção), mas para o NASA POWER o texto destaca apenas que ""o script confere que ela nunca é negativa"", sem definir o lançamento de uma exceção customizada nos arquivos fornecidos.";1
+Caso ocorra algum comportamento inesperado no script de transformação do SIH/SUS, é mencionado que ""valores inesperados interrompem o script"" (gerando um erro padrão de interrupção), mas para o NASA POWER o texto destaca apenas que ""o script confere que ela nunca é negativa"", sem definir o lançamento de uma exceção customizada nos arquivos fornecidos.";0
 10000;B;Como obter_arquivo_mais_recente em limpeza.py escolhe o arquivo?;Ordena pelo nome e pega o último;"Com base nos arquivos fornecidos no repositório, a função `obter_arquivo_mais_recente` não está presente no arquivo `limpeza.py` (este arquivo nem sequer aparece listado no conteúdo dos arquivos do projeto, embora seja citado na estrutura do repositório no `README.md`). 
 
 No entanto, uma função com o mesmo nome e comportamento idêntico está definida no arquivo `src/explorar.py`. Nele, a função escolhe o arquivo da seguinte forma:

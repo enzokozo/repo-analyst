@@ -1,70 +1,11 @@
-﻿question;expected;answer;correct
-Qual é o número mínimo de jogadores para iniciar uma rodada?;2;"O número mínimo de jogadores para iniciar uma rodada é **2** (dois). 
-
-Essa verificação pode ser encontrada no código em `backend/game_logic.py`, na função `start_round`:
-```python
-if len(self.players) < 2:
-    return False, ""Faltam jogadores para começar""
-```";1
-Quantas cartas tem o baralho e quais são os valores?;100 cartas, de 1 a 100;O baralho do Ito tem **100** cartas e os valores vão de **1 a 100** (ou seja, `list(range(1, 101))`).;1
-Quantas cores estão disponíveis para os jogadores?;8;"Com base no código do arquivo `backend/game_logic.py`, existem **8** cores padrão disponíveis na lista `available_colors`. São elas:
-
-1. Preto (`#000000`)
-2. Amarelo (`#FFD700`)
-3. Verde (`#28A745`)
-4. Roxo (`#6F42C1`)
-5. Rosa (`#E83E8C`)
-6. Azul (`#007BFF`)
-7. Branco (`#FFFFFF`)
-8. Vermelho (`#DC3545`)";1
-O que acontece com a cor de um jogador quando ele sai do jogo?;Volta para a lista de cores disponíveis;"Quando um jogador sai do jogo, a cor dele é devolvida para a lista de cores disponíveis (`available_colors`), conforme implementado no método `remove_player` da classe `ItoGame` em `backend/game_logic.py`:
-
-```python
-    def remove_player(self, player_name: str):
-        """"""
-        Remove um jogador do jogo e devolve a cor dele para a lista de cores disponíveis.
-        """"""
-
-        # Verifica se o jogador existe no jogo antes de tentar remover
-        if player_name in self.players:
-            del self.players[player_name]
-
-            # Devolve a cor para a lista de cores disponíveis
-            if player_name in self.player_colors:
-                freed_color = self.player_colors.pop(player_name)
-                self.available_colors.append(freed_color)
-```";1
-Qual é a rota do WebSocket?;/ws/{player_name};A rota do WebSocket é `/ws/{player_name}`.;1
-get_game_state revela as cartas dos jogadores?;Não;"Não, o método `get_game_state` não revela as cartas dos jogadores. 
-
-Como pode ser visto na implementação em `backend/game_logic.py`:
-```python
-    def get_game_state(self) -> dict:
-        """"""
-        Retorna as informações do jogo (sem revelar as cartas dos jogadores).
-        """"""
-        return {
-            ""players"": list(self.players.keys()),
-            ""players_colors"": self.player_colors,
-            ""played_cards"": self.played_cards,
-            ""theme"": self.theme,
-            ""is_started"": self.is_started
-        }
-```
-Ele retorna apenas a lista de jogadores, suas cores, as cartas jogadas (`played_cards`), o tema e o status de início (`is_started`), sem incluir as cartas secretas armazenadas no dicionário `self.players`.";1
-Em qual endereço o frontend se conecta ao WebSocket?;ws://127.0.0.1:8000/ws/{name};"De acordo com o arquivo `backend/main.py`, o frontend se conecta ao WebSocket no seguinte endpoint/endereço:
-
-`/ws/{player_name}`";0
-Qual versão do FastAPI o projeto usa?;0.135.3;"Com base nos arquivos fornecidos, não há menção à versão exata do FastAPI utilizada (como em um arquivo `requirements.txt` ou `pyproject.toml`). O código apenas importa o FastAPI em `backend/main.py`:
-
-```python
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-```
-
-Portanto, a versão específica do FastAPI não está informada nos arquivos do repositório.";0
-Em qual banco de dados o estado do jogo é salvo?;Nenhum, fica em memória;"Com base nos arquivos fornecidos (`backend/game_logic.py` e `backend/main.py`), o estado do jogo **não é salvo em nenhum banco de dados**. 
-
-Toda a lógica e o estado do jogo (`ItoGame`) são mantidos inteiramente na **memória RAM** da aplicação Python, utilizando estruturas de dados padrão (dicionários e listas) em tempo de execução.";1
-Qual provedor de login o projeto usa?;Nenhum / não encontrou;"Com base nos arquivos fornecidos (`backend/game_logic.py` e `backend/main.py`), **o projeto não utiliza nenhum provedor de login** (como OAuth, Google, GitHub, etc.). 
-
-O sistema identifica os jogadores apenas pelo nome inserido na rota do WebSocket (`/ws/{player_name}`), sem exigir autenticação, senhas ou sistemas de login externos.";1
+﻿limit;group;question;expected;answer;correct
+100000;code;Qual é o número mínimo de jogadores para iniciar uma rodada?;2;O número mínimo de jogadores para iniciar uma rodada é 2.;1
+100000;code;Quantas cartas tem o baralho e quais são os valores?;100 cartas, de 1 a 100;O baralho do Ito tem cartas de 1 a 100, totalizando 100 cartas com valores que vão de 1 até 100.;1
+100000;code;Quantas cores estão disponíveis para os jogadores?;8;Estão disponíveis 8 cores para os jogadores.;1
+100000;code;O que acontece com a cor de um jogador quando ele sai do jogo?;Volta para a lista de cores disponíveis;Quando um jogador sai do jogo, a cor dele é removida do dicionário de cores dos jogadores e devolvida para a lista de cores disponíveis, podendo ser escolhida novamente por outro jogador.;1
+100000;code;Qual é a rota do WebSocket?;/ws/{player_name};A rota do WebSocket é /ws/{player_name}.;1
+100000;code;get_game_state revela as cartas dos jogadores?;Não;Não, a função get_game_state não revela as cartas dos jogadores. Ela retorna um dicionário contendo apenas a lista de jogadores, as cores dos jogadores, as cartas jogadas na rodada, o tema e o status indicando se o jogo começou.;1
+100000;skipped;Em qual endereço o frontend se conecta ao WebSocket?;ws://127.0.0.1:8000/ws/{name};O frontend se conecta ao WebSocket no endereço /ws/{player_name}, onde {player_name} representa o nome do jogador.;0
+100000;skipped;Qual versão do FastAPI o projeto usa?;0.135.3;Desculpe, mas não encontrei a versão específica do FastAPI nos arquivos fornecidos.;0
+100000;none;Em qual banco de dados o estado do jogo é salvo?;Nenhum, fica em memória;O estado do jogo não é salvo em nenhum banco de dados. Ele é mantido exclusivamente na memória RAM através da instância da classe ItoGame e do gerenciador de conexões no backend.;1
+100000;none;Qual provedor de login o projeto usa?;Nenhum / não encontrou;O projeto não utiliza nenhum provedor de login externo. A identificação dos jogadores é feita apenas informando o nome diretamente ao entrar no jogo através do WebSocket (parâmetro player_name na rota /ws/{player_name}), sem autenticação ou senhas.;1
